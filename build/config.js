@@ -7,6 +7,7 @@ const node = require('rollup-plugin-node-resolve')
 const flow = require('rollup-plugin-flow-no-whitespace')
 const version = process.env.VERSION || require('../package.json').version
 const weexVersion = process.env.WEEX_VERSION || require('../packages/weex-vue-framework/package.json').version
+const quickappVersion = process.env.QUICKAPP_VERSION || require('../packages/quickapp-vue-framework/package.json').version
 
 const banner =
   '/*!\n' +
@@ -18,6 +19,20 @@ const banner =
 const weexFactoryPlugin = {
   intro () {
     return 'module.exports = function weexFactory (exports, document) {'
+  },
+  outro () {
+    return '}'
+  }
+}
+
+const bannerQuickapp = `/*
+* Copyright (C) 2017, hapjs.org. All rights reserved.
+*/
+`
+
+const quickAppFactoryPlugin = {
+  intro () {
+    return 'module.exports = function quickAppFactory (exports, document, quickappHelper) {'
   },
   outro () {
     return '}'
@@ -165,6 +180,26 @@ const builds = {
     dest: resolve('packages/weex-template-compiler/build.js'),
     format: 'cjs',
     external: Object.keys(require('../packages/weex-template-compiler/package.json').dependencies)
+  },
+
+  // use like this "npm run build:quickapp -- --dir=xxx"
+  'quickapp': {
+    quickapp: true,
+    entry: resolve('quickapp/entry-runtime-factory.js'),
+    dest: resolve('packages/quickapp-vue-framework/factory.js'),
+    env: 'development',
+    format: 'cjs',
+    plugins: [quickAppFactoryPlugin],
+    banner: bannerQuickapp
+  },
+  'quickapp-with-compiler': {
+    quickapp: true,
+    entry: resolve('quickapp/entry-runtime-factory-with-compiler.js'),
+    dest: resolve('packages/quickapp-vue-framework/factory-with-compiler.js'),
+    env: 'development',
+    format: 'cjs',
+    plugins: [quickAppFactoryPlugin],
+    banner: bannerQuickapp
   }
 }
 
@@ -177,6 +212,7 @@ function genConfig (name) {
       replace({
         __WEEX__: !!opts.weex,
         __WEEX_VERSION__: weexVersion,
+        __QUICKAPP_VERSION__: quickappVersion,
         __VERSION__: version
       }),
       flow(),

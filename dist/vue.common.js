@@ -1,6 +1,6 @@
 /*!
  * Vue.js v2.5.3
- * (c) 2014-2017 Evan You
+ * (c) 2014-2019 Evan You
  * Released under the MIT License.
  */
 'use strict';
