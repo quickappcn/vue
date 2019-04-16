@@ -5,6 +5,17 @@ import { extend, cached, camelize } from 'shared/util'
 
 const normalize = cached(camelize)
 
+
+function normalizeStyle (cssText) {
+  const regex = /([\w-]*)\s*:\s*([^;]*)/g
+  const rules = {}
+  let match
+  while (match = regex.exec(cssText)) {
+    rules[match[1]] = match[2].trim()
+  }
+  return rules
+}
+
 function createStyle (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   if (!vnode.data.staticStyle) {
     updateStyle(oldVnode, vnode)
@@ -26,8 +37,16 @@ function updateStyle (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   }
   let cur, name
   const elm = vnode.elm
-  const oldStyle: any = oldVnode.data.style || {}
+  let oldStyle: any = oldVnode.data.style || {}
   let style: any = vnode.data.style || {}
+
+  if (typeof style === 'string') {
+    style = normalizeStyle(style)
+  }
+
+  if (typeof oldStyle === 'string') {
+    oldStyle = normalizeStyle(oldStyle)
+  }
 
   const needClone = style.__ob__
 
